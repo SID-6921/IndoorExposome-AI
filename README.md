@@ -4,7 +4,7 @@ Preliminary computational feasibility work for a proposed NIEHS STTR Phase I con
 
 Central feasibility question: can multimodal AI predict sustained indoor PM2.5 exposure episodes 30–60 minutes in advance in previously unseen buildings, better than conventional forecasting approaches?
 
-Status: **Step 1 complete** (dataset & endpoint feasibility). Awaiting PI sign-off before Step 2 (modeling).
+Status: **Step 1 complete** (dataset & endpoint feasibility), **pre-modeling confirmation checks complete** (see [STEP1_5_PRE_MODELING_CONFIRMATION.md](STEP1_5_PRE_MODELING_CONFIRMATION.md)). Awaiting PI sign-off on episode definition before Step 2 (modeling).
 
 ## Step 1: Dataset & Endpoint Feasibility Report
 
