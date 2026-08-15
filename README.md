@@ -4,7 +4,9 @@ Preliminary computational feasibility work for a proposed NIEHS STTR Phase I con
 
 Central feasibility question: can multimodal AI predict sustained indoor PM2.5 exposure episodes 30–60 minutes in advance in previously unseen buildings, better than conventional forecasting approaches?
 
-Status: **Step 1 complete** (dataset & endpoint feasibility), **pre-modeling confirmation checks complete** (see [STEP1_5_PRE_MODELING_CONFIRMATION.md](STEP1_5_PRE_MODELING_CONFIRMATION.md)). Awaiting PI sign-off on episode definition before Step 2 (modeling).
+Status: **Step 1 complete** (dataset & endpoint feasibility), **pre-modeling confirmation checks complete** (see [STEP1_5_PRE_MODELING_CONFIRMATION.md](STEP1_5_PRE_MODELING_CONFIRMATION.md)), **Step 2 preliminary baseline modeling complete** (see [STEP2_PRELIMINARY_BASELINE_RESULTS.md](STEP2_PRELIMINARY_BASELINE_RESULTS.md)).
+
+**Step 2 headline (preliminary, on the 59-home CV pool only — 10-home final holdout and 100-Air-Purifiers external set remain sealed):** current models do not yet clearly/consistently outperform a simple persistence baseline, false-alarm rates remain high (~6.7–61 per home-day depending on model/horizon), and achieved lead time (~11–19 min average) falls well short of the 30–60 min horizon the product concept targets. Reported as-is per PI instruction not to force a positive result. Awaiting PI review before opening the final holdout.
 
 ## Step 1: Dataset & Endpoint Feasibility Report
 
