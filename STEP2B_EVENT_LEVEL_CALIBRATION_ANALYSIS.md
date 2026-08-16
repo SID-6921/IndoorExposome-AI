@@ -42,13 +42,13 @@ The catch: **RF and XGBoost — the models with the best raw AUPRC in Step 2 —
 
 **Reading this honestly:** even at the operating points that clear the detection/lead-time bar, **alert precision is low (~10–17%)** — meaning roughly 5 to 9 out of every 10 alerts fired are false alarms in absolute count. What makes this potentially still viable is that the *rate* is bounded to ≤2/home-day by construction, which is the metric you asked us to target — but "1 in 10 alerts is real" is a genuine usability question for a consumer product, separate from the rate question, and should be weighed as such.
 
-Note also the 30-min horizon structurally cannot reach the ≥15–20 min lead bar (the horizon itself caps lead time at 30 minutes, and the best achieved there is 10 minutes) — this is a ceiling effect of the horizon choice, not a modeling failure, and is worth keeping in mind when comparing horizons.
+**Correction (per PI request):** the 30-min horizon is not structurally incapable of reaching the ≥15–20 min lead bar — a 30-minute horizon can theoretically provide up to 30 minutes of lead time, comfortably covering that range. What the data show is narrower: the tested models simply did not achieve a ≥15 min median lead at the operating points evaluated here (best observed: 10 minutes). That is a result of these specific models/thresholds, not a ceiling imposed by the horizon itself.
 
 ## 4. Brier-score fix
 
 Confirmed the bug: the original persistence/threshold-rule "scores" were raw µg/m³ PM2.5 values (e.g., 2, 35, 2006), not probabilities — `brier_score_loss` doesn't enforce a [0,1] range, so it was silently computing nonsense squared errors against those raw values. Fixed by fitting an **out-of-fold isotonic regression** per training fold (mapping raw persistence/threshold score → empirical probability, fit on training-fold data only, applied to the held-out fold) — a legitimate "probabilistic persistence forecast" comparable on equal footing with the ML models.
 
-Corrected Brier scores (45-min horizon): persistence **0.0104**, threshold_rule **0.0104**, logreg 0.1656, RF 0.0342, XGBoost 0.0167. Persistence is now well-calibrated by construction (isotonic regression guarantees this) — its poor performance is entirely a discrimination (AUPRC/AUROC) problem, not a calibration one, which is the correct and expected result.
+Corrected Brier scores (45-min horizon): persistence **0.0104**, threshold_rule **0.0104**, logreg 0.1656, RF 0.0342, XGBoost 0.0167. **Correction (per PI request):** out-of-fold isotonic recalibration substantially improved persistence/threshold-rule's calibration — its poor performance is entirely a discrimination (AUPRC/AUROC) problem, not a calibration one, which is the correct and expected result.
 
 ## 5. Calibration analysis (CV pool only)
 
@@ -78,7 +78,7 @@ Unchanged: primary = 45 min, secondary = 30 and 60 min, all reported transparent
 
 - **45-min primary horizon: met, by logistic regression only** (59.2% / 1.91 FA-day / 16.0 min), **not met by RF or XGBoost** (which get the detection and FA-rate right but fall 1–6 minutes short on lead time).
 - **60-min secondary horizon: met, by both RF (comfortably: 70.0% / 1.94 / 20.0) and logistic regression** (51.5% / 1.89 / 24.0).
-- **30-min secondary horizon: not met** — structurally capped on lead time (max possible is 30 min; best achieved is 10 min), even though detection rates there are the highest of any horizon (RF: 50–68%).
+- **30-min secondary horizon: not met** — not because of a structural cap (a 30-min horizon can theoretically support up to 30 min of lead time), but because the tested models did not achieve ≥15 min median lead at the evaluated operating points (best observed: 10 min), even though detection rates there are the highest of any horizon (RF: 50–68%).
 
 ## Recommendation
 
