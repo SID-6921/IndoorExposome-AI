@@ -1,0 +1,26 @@
+# Technical-Approach Note: Candidate Directions for Aims 1 and 2
+
+## Aim 1: Candidate regime-aware architectures
+
+Four candidates, roughly in order of engineering simplicity, with rationale grounded in what the preliminary data actually showed (a real but data-starved 45.0%/13.6% low-/high-baseline detection gap, and a pooled model that structurally underperforms on the minority high-baseline regime).
+
+1. **Meta-feature approach — baseline level as an input feature.** Add each home's own recent PM2.5 baseline (e.g., a rolling percentile) as a continuous input to a single pooled model, rather than hard-splitting homes into regimes. Simplest to build and deploy (one model, one artifact), and avoids hard-threshold artifacts at the regime boundary. Risk: the current pooled model already has access to absolute PM2.5 values it could in principle use to infer baseline level, yet still underperforms on high-baseline homes — suggesting this signal isn't being exploited effectively with current features/data volume, not that it's unavailable. Worth testing explicitly before assuming it doesn't work.
+
+2. **Severity/regime-weighted loss.** Keep one pooled model, but reweight training examples (e.g., inverse-frequency or severity-based weighting) so the model isn't dominated by the majority low-baseline regime's easier signal. Straightforward to implement on top of the existing pipeline; the open question is whether reweighting alone can compensate for the high-baseline regime's small absolute sample (6 homes in the current data), or whether the bottleneck is data volume rather than optimization.
+
+3. **Regime-conditioned classifier (mixture-of-experts).** Explicitly classify each home into a baseline regime (the percentile rule already characterized) and route to a regime-specific model — either fully separate models or a shared feature extractor with regime-specific heads. Most directly targets the observed gap, but the regime-stratified first-pass test already showed this is inconclusive with only 6 high-baseline homes; this approach's value depends heavily on acquiring more high-baseline-regime data (from LBNL's remaining homes, the 100-home cohort, or future recruitment), which is itself a natural funded deliverable.
+
+4. **Per-deployment adaptation layer.** Train one shared global model, then allow a lightweight per-property adaptation (recalibrated threshold, or a small fine-tuned layer) using that property's own early data after install — a natural extension of the calibration-transfer finding (below) to detection thresholds, not just probability outputs.
+
+**Recommended framing for the aims page:** (1) and (2) are the cheapest to test rigorously and don't require new data collection; (3) is the most direct response to the finding but is honestly gated on acquiring substantially more high-baseline-regime buildings than currently available — which argues for treating "acquire and characterize more high-baseline-regime data" as an explicit Aim 1 deliverable, not an assumed input.
+
+## Aim 2: Operational per-deployment recalibration protocol
+
+Grounded in the finding that a calibrator fit on one cohort does not transfer cleanly to another (LBNL-fit slope 0.998 in-sample → 1.165 when applied as-is to the 100-home cohort; refitting locally restores ~1.0). A workable operational protocol:
+
+1. **Install / break-in mode.** New deployment runs on the frozen model's raw discrminative ranking (alert thresholding) rather than literal probability/risk-percentage display. Ranking-based alerting doesn't require calibration to already be correct — only calibration (a numeric "% risk" claim) does — so the system can be useful from day one without over-claiming precision.
+2. **Data-sufficiency gate.** Track accumulated *episodes*, not calendar time, as the real currency for calibration (a quiet property may take much longer to accumulate enough positive examples than a noisy one). Don't switch to calibrated/percentage-based display until a minimum episode count is reached — the exact number is what the recalibration-data-requirement analysis (in progress) is meant to establish empirically.
+3. **Local refit.** Once the gate is cleared, fit a property-specific Platt/isotonic calibrator using that property's own accumulated data, applied on top of the shared (frozen) discriminative model — the model itself doesn't need retraining, only its probability output does.
+4. **Ongoing drift monitoring.** Calibration is not a one-time step — seasonal ambient air-quality changes and shifts in occupant behavior can drift a property's baseline over time. Periodically re-evaluate and refresh the local calibrator (e.g., on a rolling window) rather than freezing it after the initial fit.
+
+This gives Aim 2 a concrete operational deliverable (the break-in protocol and its data-sufficiency threshold) rather than just "recalibration is needed," and directly ties into the commercial deployment story for CleanStay AI.
