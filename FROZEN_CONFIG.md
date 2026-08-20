@@ -1,4 +1,4 @@
-# FROZEN configuration — primary model, locked before opening the 10-home LBNL holdout
+# FROZEN configuration: primary model, locked before opening the 10-home LBNL holdout
 
 Written and committed before any holdout data is touched. Nothing below changes after seeing holdout results, per PI instruction.
 
@@ -19,18 +19,18 @@ Written and committed before any holdout data is touched. Nothing below changes 
 - `StandardScaler()`, fit on the 59-home training pool only, applied unchanged to holdout.
 
 ## Model
-- `LogisticRegression(max_iter=2000, class_weight="balanced")`, scikit-learn defaults otherwise (solver="lbfgs", deterministic — no random_state needed).
-- Trained on **all 59 CV-pool homes** (not fold-restricted — the 5-fold CV was for validation/threshold-selection only; the deployed model for the holdout is refit on the full development pool).
+- `LogisticRegression(max_iter=2000, class_weight="balanced")`, scikit-learn defaults otherwise (solver="lbfgs", deterministic, no random_state needed).
+- Trained on **all 59 CV-pool homes** (not fold-restricted: the 5-fold CV was for validation/threshold-selection only, and the deployed model for the holdout is refit on the full development pool).
 
 ## Operating point (probability threshold)
-- **0.8711552648952829** — the threshold that produced ≤2.0 false alerts/home-day on the 59-home CV pool via 5-fold out-of-fold evaluation (Step 2B). Selected entirely on development data. Not re-selected on holdout.
+- **0.8711552648952829**, the threshold that produced ≤2.0 false alerts/home-day on the 59-home CV pool via 5-fold out-of-fold evaluation (Step 2B). Selected entirely on development data. Not re-selected on holdout.
 
 ## Alert consolidation rule
 - 30-minute cooldown: once an alert fires for a home, no new alert counts for that home until 30 minutes have elapsed, regardless of intervening probability values.
 - An alert is a "hit" if the per-minute label at its timestamp is 1 (an episode onset falls within the next 45 minutes); otherwise a "false alert."
 
 ## Evaluation metrics (holdout, computed once)
-Number of homes; number of qualifying episodes; event sensitivity; distinct false alerts/home-day; alert precision; median/mean first-alert lead time (+ IQR); % of episodes warned ≥10/20/30 min early; AUPRC; AUROC; bootstrap confidence intervals (home-level cluster resampling, 2000 iterations, since homes — not minutes — are the independent unit).
+Number of homes; number of qualifying episodes; event sensitivity; distinct false alerts/home-day; alert precision; median/mean first-alert lead time (+ IQR); % of episodes warned ≥10/20/30 min early; AUPRC; AUROC; bootstrap confidence intervals (home-level cluster resampling, 2000 iterations, since homes, not minutes, are the independent unit).
 
 ## Rule
 No threshold change, no feature change, no recalibration, no retraining, no model reselection after this file is written. If the primary result is unfavorable, it is reported directly.

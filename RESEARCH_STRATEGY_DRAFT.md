@@ -1,59 +1,57 @@
 # Research Strategy / Approach — Draft (Aims 1 & 2)
 
-**Status: structural draft to seed the full Research Strategy section — not final language, built to be expanded/edited.** Grounded entirely in the preliminary data already in this repo; every claim below cites the specific document it comes from.
+Status: structural draft to seed the full Research Strategy section, not final language. Every claim below cites the specific preliminary-data document it comes from.
 
 ---
 
-## Aim 1: Characterize and Resolve Regime-Dependent Detection Performance in Indoor PM2.5 Episode Forecasting
+## Aim 1: Characterize and resolve regime-dependent detection performance in indoor PM2.5 episode forecasting
 
 ### Rationale and preliminary data
 
-Preliminary work established that a single, fixed episode-detection threshold does not perform uniformly across buildings with different baseline air-quality regimes — and, critically, that this regime-sensitivity itself is a real, replicating phenomenon, even though its *specific direction* is not.
+Preliminary work found that a single fixed episode-detection threshold doesn't perform uniformly across buildings with different baseline air-quality regimes. More importantly, that regime-sensitivity is itself a real, repeatable phenomenon, even though its specific direction isn't.
 
-- In the LBNL development cohort, a 6-home "high-baseline" subset (homes whose own 90th-percentile PM2.5 already exceeds the 35 µg/m³ episode threshold) showed markedly *lower* event-detection performance (13.6%) than the 52-home "low-baseline" majority (45.0%) (`REGIME_STRATIFIED_CHECK.md`).
-- Testing the *same* frozen model and threshold on an independent, 100-home, cross-national external cohort replicated the low-baseline result almost exactly (45.6%) but **inverted** the high-baseline result (68.0% detection, at a false-alarm rate 60% above the operational target) (`REGIME_REPLICATION_100HOME.md`).
-- Separately, testing whether the underlying 35 µg/m³ absolute threshold, a per-home relative threshold, or a union of both best resolves this was itself inconclusive with adequate statistical rigor: a home-level cluster bootstrap showed the fixed and relative definitions are not statistically distinguishable from each other (paired 95% CI [−2.1, +27.5] pp), while a naive union of the two is confidently *worse* than either alone (`DEFINITION_BOOTSTRAP_COMPARISON.md`, `HYBRID_DEFINITION_FIRST_PASS.md`).
+In the LBNL development cohort, a 6-home "high-baseline" subset (homes whose own 90th-percentile PM2.5 already exceeds the 35 µg/m³ episode threshold) showed markedly lower event-detection performance (13.6%) than the 52-home "low-baseline" majority (45.0%) (`REGIME_STRATIFIED_CHECK.md`). Testing the same frozen model and threshold on an independent, 100-home, cross-national external cohort replicated the low-baseline result almost exactly (45.6%) but inverted the high-baseline one: 68.0% detection, at a false-alarm rate 60% above the operational target (`REGIME_REPLICATION_100HOME.md`).
 
-Together, these findings support a specific, falsifiable claim: **a single fixed-threshold, single-model approach to episode detection is not robust to the between-building heterogeneity that any real multi-site deployment will encounter — but the data currently available are not sufficient to characterize *why*, or to select among candidate remedies with confidence.** That characterization and remedy-selection is the substance of Aim 1.
+Separately, we tested whether the fixed 35 µg/m³ threshold, a per-home relative threshold, or a union of both resolves this best, and that comparison was itself inconclusive with proper statistical rigor. A home-level cluster bootstrap showed the fixed and relative definitions aren't statistically distinguishable from each other (paired 95% CI −2.1 to +27.5 percentage points), while a naive union of the two is confidently worse than either alone (`DEFINITION_BOOTSTRAP_COMPARISON.md`, `HYBRID_DEFINITION_FIRST_PASS.md`).
+
+Together, these findings support a specific, falsifiable claim: a single fixed-threshold, single-model approach to episode detection isn't robust to the between-building heterogeneity that any real multi-site deployment will encounter, and the data available so far aren't enough to say why, or to choose among candidate fixes with confidence. Characterizing that and choosing a remedy is the substance of Aim 1.
 
 ### Specific approach
 
-**Sub-aim 1a — Acquire and characterize additional high-baseline-regime buildings.** The central limitation across all definition/regime analyses to date is sample size in the high-baseline regime specifically (6 buildings in the development cohort, 13 in the external cohort) — too few to resolve competing hypotheses about *why* detection performance and false-alarm behavior diverge by regime. This sub-aim targets recruitment/acquisition of additional high-baseline buildings (candidate sources: remaining unexploited LBNL homes not yet regime-classified in this analysis, negotiated access to the COLLECTiEF cohort, and/or new data collection in partnership with the CleanStay AI pilot sites) sufficient to power a properly-designed regime comparison.
+**Acquire and characterize more high-baseline-regime buildings.** The limiting factor across every definition and regime analysis so far is sample size in the high-baseline regime specifically: 6 buildings in the development cohort, 13 in the external cohort. That's too few to tell apart competing explanations for why detection and false-alarm behavior diverge by regime. This sub-aim targets recruiting or acquiring enough additional high-baseline buildings (candidates: LBNL homes not yet regime-classified in this analysis, negotiated access to the COLLECTiEF cohort, new data collected with CleanStay AI pilot sites) to properly power a regime comparison.
 
-**Sub-aim 1b — Formally evaluate candidate regime-aware architectures.** With adequate per-regime sample size from 1a, systematically test the four candidate directions identified in preliminary technical scoping (`TECHNICAL_APPROACH_NOTE.md`), in order of implementation cost:
-1. Baseline-level-as-input-feature (single pooled model, continuous regime signal)
-2. Severity/regime-weighted training loss
-3. Regime-conditioned mixture-of-experts (explicit regime classification + specialized sub-models)
-4. Per-deployment adaptation layer (extends Aim 2's per-site calibration concept to detection thresholds)
+**Formally evaluate candidate regime-aware architectures.** With adequate per-regime sample size, systematically test the four candidates identified in preliminary scoping (`TECHNICAL_APPROACH_NOTE.md`), roughly in order of implementation cost: baseline level as an input feature to a single pooled model; a severity- or regime-weighted training loss; a regime-conditioned mixture of experts (explicit regime classification routed to specialized sub-models); and a per-deployment adaptation layer that extends Aim 2's calibration concept to detection thresholds. Each gets evaluated under the same event-level, home-held-out, bootstrap-CI methodology already used in preliminary work, so the results are directly comparable to what's already reported.
 
-Each will be evaluated under the same event-level, home-held-out, bootstrap-CI methodology already established and validated across three preliminary rounds, so that this aim's outputs are directly comparable to the preliminary numbers already reported.
-
-**Sub-aim 1c — Establish a single, pre-registered episode-detection protocol.** Using the expanded dataset from 1a and the architecture comparison from 1b, lock a final episode definition and detection protocol robust to the between-building heterogeneity characterized above — replacing the current "fixed vs. relative vs. hybrid, unresolved" state with a defensible, validated final answer, pre-registered before any confirmatory evaluation on a final held-out cohort.
+**Lock a single, pre-registered episode-detection protocol.** Using the expanded dataset and the architecture comparison above, settle on a final episode definition and detection protocol that holds up across the heterogeneity we've characterized, replacing the current unresolved fixed-versus-relative-versus-hybrid state with a validated answer, pre-registered before any confirmatory evaluation on a final held-out cohort.
 
 ### Milestones
-- M1: Acquired/curated high-baseline-regime dataset with adequate power (target: ≥25-30 high-baseline buildings, informed by an a priori power calculation)
-- M2: Comparative evaluation of the 4 candidate architectures, event-level metrics + bootstrap CIs, reported transparently regardless of outcome
-- M3: Locked, pre-registered unified episode-detection protocol
-- M4: Confirmatory evaluation on a final untouched cohort (methodology precedent: `STEP2C_HOLDOUT_RESULTS.md`)
+
+- Curated high-baseline-regime dataset with a target sample size to be finalized via power analysis, informed by the effect sizes observed in preliminary regime comparisons (see `POWER_CALCULATION_NOTE.md`); the real design quantity is building-weeks of high-baseline monitoring, not a building count alone, so the specific number depends on the monitoring duration chosen for the funded data collection
+- Comparative evaluation of the four candidate architectures, reported transparently regardless of outcome
+- Locked, pre-registered unified episode-detection protocol
+- Confirmatory evaluation on a final untouched cohort (precedent: `STEP2C_HOLDOUT_RESULTS.md`)
 
 ---
 
-## Aim 2: Develop and Validate an Operational Per-Deployment Calibration Protocol
+## Aim 2: Develop and validate an operational per-deployment calibration protocol
 
 ### Rationale and preliminary data
 
-A probability calibrator (Platt scaling) fit on the development cohort does **not** transfer cleanly to an independent external cohort — it over-corrects (calibration slope 1.165 vs. ideal 1.0) rather than generalizing, while refitting locally on the target cohort restores near-ideal calibration (slope 1.002) (`CALIBRATOR_TRANSFER_TEST.md`). This means model *discrimination* (ranking ability, reflected in AUROC/AUPRC) may transfer reasonably across deployments, but model *calibration* (literal probability/risk-percentage claims) does not — a critical distinction for any product that reports numeric risk to end users. A first-pass simulation of how much per-property data is needed before local recalibration stabilizes was inconclusive (`RECALIBRATION_DATA_REQUIREMENT.md`) but suggestive of a 60–180-day / ~30-130-positive-window range, with a clear, identified methodological fix (fixed evaluation window) needed to determine this rigorously.
+A probability calibrator (Platt scaling) fit on the development cohort doesn't transfer cleanly to an independent external cohort. It over-corrects, landing at a calibration slope of 1.165 against an ideal of 1.0, rather than generalizing, while refitting locally on the target cohort restores near-ideal calibration (slope 1.002) (`CALIBRATOR_TRANSFER_TEST.md`). In other words, the model's discrimination (its ranking ability, reflected in AUROC and AUPRC) may transfer reasonably well across deployments, but its calibration (a literal probability or risk-percentage claim) doesn't. That distinction matters for any product that reports numeric risk to end users.
+
+A first-pass simulation of how much per-property data a new deployment needs before local recalibration stabilizes was inconclusive (`RECALIBRATION_DATA_REQUIREMENT.md`), but pointed to something in the range of 60 to 180 days, or roughly 30 to 130 positive alert windows, with a clear methodological fix (a fixed evaluation window) identified for pinning this down properly.
 
 ### Specific approach
 
-**Sub-aim 2a — Design and validate the deployment break-in protocol.** New deployments will operate initially on the shared model's raw discriminative ranking (threshold-based alerting) rather than literal calibrated risk percentages, since ranking-based alerting does not require calibration to already be correct. Validate that this break-in mode provides acceptable alert-burden characteristics (false-alarms/property-day) using the same event-level methodology established in Aims/preliminary work.
+**Design and validate the deployment break-in protocol.** New deployments start on the shared model's raw discriminative ranking (threshold-based alerting) rather than literal calibrated risk percentages, since ranking-based alerting doesn't need calibration to already be correct. We'll validate that this break-in mode gives an acceptable alert burden (false alarms per property-day) using the same event-level methodology as the preliminary work.
 
-**Sub-aim 2b — Rigorously determine the data-sufficiency threshold for local recalibration.** Repeat the recalibration-data-requirement simulation with the identified methodological correction (fixed-size, held-out evaluation window per training-budget step, rather than "all remaining data," which confounds the comparison as the training window grows) across a larger and more diverse set of properties (both cohorts, plus Aim 1's expanded high-baseline dataset). Deliverable: a validated, defensible data-sufficiency gate — expressed in accumulated positive-alert-windows rather than calendar time, since preliminary work suggests episode *count*, not elapsed time, is the operative limiting factor — for switching a property from break-in/ranking mode to calibrated/percentage mode.
+**Rigorously determine the data-sufficiency threshold for local recalibration.** Repeat the recalibration simulation with the methodological fix already identified (a fixed-size held-out evaluation window at each training-budget step, rather than "all remaining data," which confounds the comparison as the training window grows), across a larger and more diverse set of properties: both existing cohorts plus Aim 1's expanded high-baseline dataset. The deliverable is a validated data-sufficiency gate, expressed in accumulated positive-alert-windows rather than calendar time, since the preliminary data suggest episode count, not elapsed time, is what actually limits this.
 
-**Sub-aim 2c — Build and validate ongoing calibration-drift monitoring.** Real deployments will experience seasonal ambient air-quality shifts and changing occupant behavior. Design and validate a monitoring mechanism (e.g., a rolling-window calibration-slope check) that flags when a property's calibration has drifted enough to warrant a refresh, and validate the refresh procedure itself using the same held-out methodology.
+**Build and validate ongoing calibration-drift monitoring.** Real deployments will see seasonal shifts in ambient air quality and changing occupant behavior. We'll design and validate a monitoring mechanism, such as a rolling-window calibration-slope check, that flags when a property's calibration has drifted enough to need a refresh, and validate the refresh procedure with the same held-out methodology.
 
 ### Milestones
-- M1: Validated break-in-mode alert-burden characteristics across both existing cohorts
-- M2: Rigorous (fixed-window) recalibration data-sufficiency threshold, reported as a specific, defensible number
-- M3: Validated drift-detection and refresh mechanism
-- M4: End-to-end operational protocol specification, ready for integration into the CleanStay AI product deployment pipeline
+
+- Validated break-in-mode alert-burden characteristics across both existing cohorts
+- A rigorous, fixed-window recalibration data-sufficiency threshold, reported as a specific number
+- Validated drift-detection and refresh mechanism
+- End-to-end operational protocol specification, ready to integrate into the CleanStay AI deployment pipeline
